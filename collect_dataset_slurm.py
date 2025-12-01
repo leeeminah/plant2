@@ -211,7 +211,6 @@ if __name__ == "__main__":
     log_root = f"{data_save_directory}/slurm"
 
     route_folder = "/home/gerstenecker/PlanT_2_cleanup/data"
-    # route_folder = "/home/jaeger/ordnung/internal/garage_2_cleanup/data"
 
     # find all .xml files in route_folder
     routes = glob.glob(f"{route_folder}/**/*.xml", recursive=True)

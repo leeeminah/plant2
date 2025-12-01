@@ -29,20 +29,12 @@ training:
   weight_decay: 0.1 # only applied on matmul weights
 
   log_path: log/
-  num_workers: 16 # for DataLoader           #######################################
+  num_workers: 16 # for DataLoader
   seq_len: 1
-  # max_NextRouteBBs: 2 # max 10 prevents really high ids if route is long
-  # input_ego: False # True ###############################################################################
-  # remove_velocity: None # input
-  # route_only_wp: False # True
-  # remove_back: False
-  # pretraining_path: none
   augment: True
   augment_parked: True
 
 pre_training:
-  # pretraining: forecast #none
-  # multitask: True
   forecastLoss_weight: 1
   future_timestep: 1
   quantize: True

@@ -19,7 +19,7 @@ mkdir -p $DS
 
 echo $DS
 
-# This is dont specifically on a slurm cluster so the dataset is on the ssd
+# This is specifically for the slurm cluster so the dataset is on the ssd
 date
 unzip -q ~/data/PlanT_dataset.zip -d $DS
 date

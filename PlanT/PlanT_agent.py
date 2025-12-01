@@ -47,6 +47,7 @@ class PlanTAgent(DataAgent):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.route_index = route_index
+        print("Route index:", self.route_index)
 
         super().setup(path_to_conf_file, route_index, traffic_manager)
 
@@ -382,7 +383,6 @@ class PlanTAgent(DataAgent):
 
         # Statics don't appear in longest6
         if self.route_index and "longest6" in self.route_index:
-            print("Not inputting static cars")
             type_nums.pop("static", None)
 
         if not self.input_static_cars:

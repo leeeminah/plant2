@@ -1,22 +1,25 @@
-![Teaser](PlanT/PlanT2_teaser.png)
-# PlanT 2.0: Exposing Biases and Structural Flaws in Closed-Loop Driving
 
+# PlanT 2.0: Exposing Biases and Structural Flaws in Closed-Loop Driving
+**PlanT 2.0 is a state-of-the-art planner for the CARLA Leaderboard 2.0.**
 <p align="center">
   <h3 align="center">
     <a href="https://arxiv.org/abs/2511.07292"> Paper</a> | <a href="https://huggingface.co/datasets/SimonGer/PlanT2_Dataset">Dataset</a> | <a href="https://huggingface.co/SimonGer/PlanT2">Model</a> 
   </h3>
 </p>
 
-# Contents
-* [Installation / Setup](#Installation-/-Setup)
-* [Quick start](#Quick-start)
-* [Data generation](#data-generation)
-* [Evaluation](#Evaluation)
-* [Training](#Training)
-* [Dataset](#Dataset)
-* [Citation](#citation)
+![Teaser](PlanT/PlanT2_teaser.png)
 
-# Installation
+
+## Contents
+* [Installation / Setup](Installation-/-Setup)
+* [Quick start](Quick-start)
+* [Data generation](data-generation)
+* [Evaluation](Evaluation)
+* [Training](Training)
+* [Dataset](Dataset)
+* [Citation](citation)
+
+## Installation
 ```bash
 # 1. Clone this repository
 git clone https://github.com/autonomousvision/plant2.git
@@ -32,9 +35,9 @@ conda env create -f environment.yml
 conda activate plant2
 ```
 
-# Quick start inference
+## Quick start inference
 You can test the performance of PlanT 2.0's [pretrained models](https://huggingface.co/SimonGer/PlanT2) using the CARLA leaderboard evaluator. 
-First, the following evironment variables have to be set correctly:
+First, the following environment variables have to be set correctly:
 ```bash
 export CARLA_ROOT=/path/to/CARLA
 export WORK_DIR=/path/to/plant2
@@ -44,7 +47,7 @@ export PYTHONPATH=$CARLA_ROOT/PythonAPI/carla:$LEADERBOARD_ROOT:$SCENARIO_RUNNER
 ```
 Afterwards, the evaluation can be started using two separate terminals:
 ```bash
-# Terminal 1: Start CARLA, e.g. using:
+# Terminal 1: Start CARLA, e.g., using:
 $CARLA_ROOT/CarlaUE4.sh
 
 # Terminal 2: Run the evaluation:
@@ -57,9 +60,9 @@ python leaderboard_autopilot/leaderboard/leaderboard_evaluator_local.py \
   --agent=PlanT/PlanT_agent.py
 ```
 
-# Evaluation
+## Evaluation
 To perform a full evaluation of a benchmark on a SLURM cluster, you can refer to [`plant_evaluate.py`](PlanT/plant_evaluate.py). The script contains some config parameters that can be changed to evaluate different benchmarks, as well as some cluster-dependent settings.
-After updating the parameters you can run the script, e.g. using:
+After updating the parameters, you can run the script, e.g., using:
 ```bash
 python plant_evaluate.py \
   --checkpoint /path/to/epoch=029_final_1.ckpt \
@@ -68,13 +71,13 @@ python plant_evaluate.py \
   --seeds 1 2 3
 ```
 
-# Training 
-To train PlanT 2.0 from scratch, you can use [`train_plant.sh`](PlanT/train_plant.sh), which can run locally or on a SLURM cluster. Relevant configuration files for training and model settings are [`config.yaml`](PlanT/config/config.yaml), [`PlanT.yaml`](PlanT/config/model/PlanT.yaml) and your user specific [`username.yaml`](PlanT/config/user/simon.yaml) (which is referenced in config.yaml). 
+## Training 
+To train PlanT 2.0 from scratch, you can use [`train_plant.sh`](PlanT/train_plant.sh), which can run locally or on a SLURM cluster. Relevant configuration files for training and model settings are [`config.yaml`](PlanT/config/config.yaml), [`PlanT.yaml`](PlanT/config/model/PlanT.yaml), and your user-specific [`username.yaml`](PlanT/config/user/simon.yaml) (which is referenced in config.yaml). 
 
-# Dataset
-The dataset used during our experiments is availabe for download [on Huggingface](https://huggingface.co/datasets/SimonGer/PlanT2_Dataset). If you want to collect your own dataset, we provide the modified [`autopilot.py`](carla_garage/autopilot.py) and [`data_agent.py`](carla_garage/data_agent.py) used for our dataset. You can use [`collect_dataset_slurm.py`](0_run_collect_dataset_slurm.sh) or [`0_run_collect_dataset_slurm.sh`](0_run_collect_dataset_slurm.sh) start the dataset collection process on a SLURM cluster. The scripts have to be modified according to your cluster setup. The current settings do not require any GPU's and instead run small jobs with 2 CPU's and 20Gb of RAM, since they don't collect RGB information.
+## Dataset
+The dataset used during our experiments is available for download [on Huggingface](https://huggingface.co/datasets/SimonGer/PlanT2_Dataset). If you want to collect your own dataset, we provide the modified [`autopilot.py`](carla_garage/autopilot.py) and [`data_agent.py`](carla_garage/data_agent.py) used for our dataset. You can use [`collect_dataset_slurm.py`](0_run_collect_dataset_slurm.sh) or [`0_run_collect_dataset_slurm.sh`](0_run_collect_dataset_slurm.sh) start the dataset collection process on a SLURM cluster. The scripts have to be modified according to your cluster setup. The current settings do not require any GPUs and instead run small jobs with 2 CPUs and 20Gb of RAM, since they don't collect RGB information.
 
-# Citation
+## Citation
 ```latex
 @misc{gerstenecker2025plant20exposingbiases,
       title={PlanT 2.0: Exposing Biases and Structural Flaws in Closed-Loop Driving}, 
@@ -87,5 +90,5 @@ The dataset used during our experiments is availabe for download [on Huggingface
 }
 ```
 
-# Acknowlegdements
+## Acknowledgments
 This repository builds upon the work of [`carla_garage`](https://github.com/autonomousvision/carla_garage) and [`PlanT`](https://github.com/autonomousvision/plant). We thank the authors for open-sourcing their work.

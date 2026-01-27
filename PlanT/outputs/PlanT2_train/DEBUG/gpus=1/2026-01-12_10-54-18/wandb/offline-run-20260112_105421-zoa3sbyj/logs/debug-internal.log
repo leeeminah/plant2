@@ -1,0 +1,14 @@
+{"time":"2026-01-12T10:54:21.223126246Z","level":"INFO","msg":"stream: starting","core version":"0.19.8","symlink path":"/workspace/plant2/PlanT/outputs/PlanT2_train/DEBUG/gpus=1/2026-01-12_10-54-18/wandb/offline-run-20260112_105421-zoa3sbyj/logs/debug-core.log"}
+{"time":"2026-01-12T10:54:21.32546147Z","level":"INFO","msg":"created new stream","id":"zoa3sbyj"}
+{"time":"2026-01-12T10:54:21.325482973Z","level":"INFO","msg":"stream: started","id":"zoa3sbyj"}
+{"time":"2026-01-12T10:54:21.325524736Z","level":"INFO","msg":"writer: Do: started","stream_id":"zoa3sbyj"}
+{"time":"2026-01-12T10:54:21.325525308Z","level":"INFO","msg":"handler: started","stream_id":"zoa3sbyj"}
+{"time":"2026-01-12T10:54:21.325552158Z","level":"INFO","msg":"sender: started","stream_id":"zoa3sbyj"}
+{"time":"2026-01-12T10:54:21.327933882Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2026-01-12T10:55:43.985664035Z","level":"INFO","msg":"stream: closing","id":"zoa3sbyj"}
+{"time":"2026-01-12T10:55:43.985695651Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2026-01-12T10:55:43.98617181Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2026-01-12T10:55:43.98622987Z","level":"INFO","msg":"handler: closed","stream_id":"zoa3sbyj"}
+{"time":"2026-01-12T10:55:43.986238961Z","level":"INFO","msg":"writer: Close: closed","stream_id":"zoa3sbyj"}
+{"time":"2026-01-12T10:55:43.986257257Z","level":"INFO","msg":"sender: closed","stream_id":"zoa3sbyj"}
+{"time":"2026-01-12T10:55:43.986283969Z","level":"INFO","msg":"stream: closed","id":"zoa3sbyj"}

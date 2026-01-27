@@ -21,7 +21,7 @@ echo $DS
 
 # This is specifically for the slurm cluster so the dataset is on the ssd
 date
-unzip -q ~/data/PlanT_dataset.zip -d $DS
+unzip -q ~/data/PlanT2_DS.zip -d $DS
 date
 
 python -u lit_train.py

@@ -466,8 +466,9 @@ class PlanTAgent(DataAgent):
         sample["route"] = []
         sample["target_speed"] = 0
 
+        # 2. List 감싸기 (batch 형태 )
         batch = [sample]
-
+        # 3. Tensor 변환  (pytorch tensor 형태로 변환하기 위해서)
         input_batch = generate_batch(batch)
 
         return input_batch

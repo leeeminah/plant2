@@ -1,5 +1,5 @@
 defaults:
-  - user: TODO_your_username
+  - user: minah
   - model: PlanT
 
 exp_folder_name: PlanT2_train
@@ -25,12 +25,12 @@ resume: True
 resume_path: ""
 use_caching: True
 custom_sampler: False
-gpus: 2
+gpus: 1
 
 expname: DEBUG
 wandb_name: training_PlanT_${hydra:job.override_dirname}
 save_dir: ${hydra:run.dir}
 
 # NOTE: This is unused currently and replaced by the DS environment variable to allow SLURM local paths
-data_dir: /home/simon/PlanT_2_cleanup/PlanT_2_2025_07_24/data
-
+# data_dir: /home/simon/PlanT_2_cleanup/PlanT_2_2025_07_24/data
+data_dir: /workspace/data/PlanT_2_dataset/data

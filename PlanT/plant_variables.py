@@ -5,7 +5,7 @@ class PlanTVariables:
                 [0.75, 0.25, 0.25], # All lines: Red
                 [0.25, 0.75, 0.25]] # Broken lines: Green
     
-    speed_cats = {50: 0, 80: 1, 100: 2, 120: 3}
+    speed_cats = {50: 0, 80: 1, 100: 2, 120: 3} #환경조건(ego가 따라야 하는 조건)
 
     class_nums = {# "ego_car": 1.0,
                     "car": 1.0,
@@ -18,6 +18,6 @@ class PlanTVariables:
                     "emergency": 6.0
                  }
     
-    car_types = ["car", "walker","emergency"]
+    car_types = ["car", "walker","emergency"] #동적 객체로 취급할 클래스 목록
 
-    target_speeds = [0.0, 4.0, 8.0, 10, 13.88888888, 16, 17.77777777, 20]
+    target_speeds = [0.0, 4.0, 8.0, 10, 13.88888888, 16, 17.77777777, 20] #ego 차량이 target speed 후보 값들

@@ -18,7 +18,7 @@ training:
   range: 50
   range_factor_front: 2
   input_ego_speed: False
-  input_bev: True
+  input_bev: False
   input_static_cars: True
 
   max_epochs: 30

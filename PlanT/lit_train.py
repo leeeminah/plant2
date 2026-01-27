@@ -39,13 +39,16 @@ def main(cfg):
     shared_dict = None
     if cfg.use_caching:
         from diskcache import Cache
-        tmp_folder = os.environ.get('DS_LOCAL')
+        # tmp_folder = os.environ.get('DS_LOCAL')
+        tmp_folder = os.environ.get("DS_LOCAL", "/workspace/cache")
+        Path(tmp_folder).mkdir(parents=True, exist_ok=True)
+
         # if tmp_folder is None:
         #     tmp_folder = f"/tmp/dataset_cache_{''.join(random.choices(string.ascii_uppercase + string.digits, k=5))}" # TODO TODO TODO
         print("Tmp folder for dataset cache: ", tmp_folder)
         # tmp_folder = tmp_folder
         # We use a local diskcache to cache the dataset on the faster SSD drives on our cluster.
-        shared_dict = Cache(directory=tmp_folder ,size_limit=int(512 * 1024 ** 3))
+        shared_dict = Cache(directory=tmp_folder ,size_limit=int(50 * 1024 ** 3))
         # shared_dict = Cache(size_limit=int(768 * 1024**3))
 
     # if we use mutliple GPUs and want wandb online it does need too much 
@@ -62,12 +65,19 @@ def main(cfg):
 
     # setup lightning logger
     csvlogger = CSVLogger(cfg.model.training.log_path, "CSVLogger")
-    wandb.init(project=cfg.exp_folder_name, name="PlanT_2_" + os.environ.get("CHECKPOINT_ADDON", "") + "_" + str(seed))
+    # wandb.init(project=cfg.exp_folder_name, name="PlanT_2_" + os.environ.get("CHECKPOINT_ADDON", "") + "_" + str(seed))
+    # wandblogger = WandbLogger(
+    #     project=cfg.exp_folder_name,
+    #     name=cfg.wandb_name,
+    #     config=OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True),
+    #     entity="seqdrive",
+    # )
     wandblogger = WandbLogger(
         project=cfg.exp_folder_name,
-        name=cfg.wandb_name,
+        name="PlanT_2_" + os.environ.get("CHECKPOINT_ADDON", "") + "_" + str(seed),
         config=OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True),
         entity="seqdrive",
+        save_dir="/workspace/wandb"   # 중요
     )
     Path(f"{cfg.model.training.log_path}/TBLogger").mkdir(parents=True, exist_ok=True)
     TBlogger = TensorBoardLogger(cfg.model.training.log_path, name="TBLogger")
@@ -88,7 +98,9 @@ def main(cfg):
     print("Checkpoint path: "+os.path.join(cfg.user.working_dir, "PlanT/checkpoints",out_path))
 
     checkpoint_callback = pl.callbacks.ModelCheckpoint(
-        save_top_k=-1,
+        save_top_k=3,
+        monitor='train/loss',
+        mode='min',
         dirpath=os.path.join(cfg.user.working_dir, "PlanT/checkpoints"),
         filename=out_path, # TODO config
         save_last=True,
@@ -143,7 +155,7 @@ def main(cfg):
             overfit_batches=overfit,
         )
 
-    torch.set_float32_matmul_precision('high')
+    torch.set_float32_matmul_precision('medium')
 
     trainer.fit(GPT_model, train_loader, val_loader, ckpt_path=resume_path)
 

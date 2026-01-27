@@ -2,3 +2,5 @@
 *.ckpt*.tar.gz
 *.tar
 *.tar.gz
+*.tar.gz
+*.tar

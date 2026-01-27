@@ -82,7 +82,7 @@ class PlanTAgent(DataAgent):
         net.load_state_dict(state_dict, strict=False)
         net.cuda()
         net.eval()
-
+                                                                                                                                                                                                                                                                             
         if self.config.compile or self.compile:
           net = torch.compile(net, mode=self.config.compile_mode)
 

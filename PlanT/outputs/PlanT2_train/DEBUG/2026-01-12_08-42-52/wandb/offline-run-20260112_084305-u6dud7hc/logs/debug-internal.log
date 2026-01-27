@@ -1,0 +1,14 @@
+{"time":"2026-01-12T08:43:05.963761898Z","level":"INFO","msg":"stream: starting","core version":"0.19.8","symlink path":"/workspace/plant2/PlanT/outputs/PlanT2_train/DEBUG/2026-01-12_08-42-52/wandb/offline-run-20260112_084305-u6dud7hc/logs/debug-core.log"}
+{"time":"2026-01-12T08:43:06.066339679Z","level":"INFO","msg":"created new stream","id":"u6dud7hc"}
+{"time":"2026-01-12T08:43:06.066370779Z","level":"INFO","msg":"stream: started","id":"u6dud7hc"}
+{"time":"2026-01-12T08:43:06.066429458Z","level":"INFO","msg":"writer: Do: started","stream_id":"u6dud7hc"}
+{"time":"2026-01-12T08:43:06.066483869Z","level":"INFO","msg":"sender: started","stream_id":"u6dud7hc"}
+{"time":"2026-01-12T08:43:06.066492752Z","level":"INFO","msg":"handler: started","stream_id":"u6dud7hc"}
+{"time":"2026-01-12T08:43:06.071195802Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2026-01-12T08:44:27.706596402Z","level":"INFO","msg":"stream: closing","id":"u6dud7hc"}
+{"time":"2026-01-12T08:44:27.706682255Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2026-01-12T08:44:27.707897143Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2026-01-12T08:44:27.70812888Z","level":"INFO","msg":"handler: closed","stream_id":"u6dud7hc"}
+{"time":"2026-01-12T08:44:27.708161503Z","level":"INFO","msg":"writer: Close: closed","stream_id":"u6dud7hc"}
+{"time":"2026-01-12T08:44:27.708217416Z","level":"INFO","msg":"sender: closed","stream_id":"u6dud7hc"}
+{"time":"2026-01-12T08:44:27.708353563Z","level":"INFO","msg":"stream: closed","id":"u6dud7hc"}

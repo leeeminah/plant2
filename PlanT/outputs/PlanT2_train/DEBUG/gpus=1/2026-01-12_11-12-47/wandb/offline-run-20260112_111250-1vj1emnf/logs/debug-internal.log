@@ -1,0 +1,14 @@
+{"time":"2026-01-12T11:12:50.509039619Z","level":"INFO","msg":"stream: starting","core version":"0.19.8","symlink path":"/workspace/plant2/PlanT/outputs/PlanT2_train/DEBUG/gpus=1/2026-01-12_11-12-47/wandb/offline-run-20260112_111250-1vj1emnf/logs/debug-core.log"}
+{"time":"2026-01-12T11:12:50.610276759Z","level":"INFO","msg":"created new stream","id":"1vj1emnf"}
+{"time":"2026-01-12T11:12:50.610301476Z","level":"INFO","msg":"stream: started","id":"1vj1emnf"}
+{"time":"2026-01-12T11:12:50.610317772Z","level":"INFO","msg":"writer: Do: started","stream_id":"1vj1emnf"}
+{"time":"2026-01-12T11:12:50.610346581Z","level":"INFO","msg":"handler: started","stream_id":"1vj1emnf"}
+{"time":"2026-01-12T11:12:50.610364306Z","level":"INFO","msg":"sender: started","stream_id":"1vj1emnf"}
+{"time":"2026-01-12T11:12:50.612689673Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2026-01-12T11:16:44.087692737Z","level":"INFO","msg":"stream: closing","id":"1vj1emnf"}
+{"time":"2026-01-12T11:16:44.087786529Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2026-01-12T11:16:44.088223415Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2026-01-12T11:16:44.097316002Z","level":"INFO","msg":"handler: closed","stream_id":"1vj1emnf"}
+{"time":"2026-01-12T11:16:44.097338363Z","level":"INFO","msg":"writer: Close: closed","stream_id":"1vj1emnf"}
+{"time":"2026-01-12T11:16:44.097348841Z","level":"INFO","msg":"sender: closed","stream_id":"1vj1emnf"}
+{"time":"2026-01-12T11:16:44.09799241Z","level":"INFO","msg":"stream: closed","id":"1vj1emnf"}

@@ -1,0 +1,305 @@
+Run started at: 12/01/2026 08:26:14
+Git state: 0b42df10e26196ab4acfe19ed03eb957f3650bbe
+Git commit: commit 0b42df10e26196ab4acfe19ed03eb957f3650bbe
+Author: Katrin Renz <47221089+RenzKa@users.noreply.github.com>
+Date:   Tue Dec 9 15:49:28 2025 +0100
+
+    Update README
+Git branch: * main
+
+diff --git a/PlanT/config/config.yaml b/PlanT/config/config.yaml
+index d6f0f37..433147c 100644
+--- a/PlanT/config/config.yaml
++++ b/PlanT/config/config.yaml
+@@ -1,5 +1,5 @@
+ defaults:
+-  - user: TODO_your_username
++  - user: minah
+   - model: PlanT
+ 
+ exp_folder_name: PlanT2_train
+@@ -25,12 +25,12 @@ resume: True
+ resume_path: ""
+ use_caching: True
+ custom_sampler: False
+-gpus: 2
++gpus: 1
+ 
+ expname: DEBUG
+ wandb_name: training_PlanT_${hydra:job.override_dirname}
+ save_dir: ${hydra:run.dir}
+ 
+ # NOTE: This is unused currently and replaced by the DS environment variable to allow SLURM local paths
+-data_dir: /home/simon/PlanT_2_cleanup/PlanT_2_2025_07_24/data
+-
++# data_dir: /home/simon/PlanT_2_cleanup/PlanT_2_2025_07_24/data
++data_dir: /workspace/data/PlanT_2_dataset/data
+diff --git a/PlanT/config/user/simon.yaml b/PlanT/config/user/simon.yaml
+deleted file mode 100644
+index 3e08b08..0000000
+--- a/PlanT/config/user/simon.yaml
++++ /dev/null
+@@ -1 +0,0 @@
+-working_dir: /home/simon/PlanT_2_cleanup
+\ No newline at end of file
+diff --git a/PlanT/dataset.py b/PlanT/dataset.py
+index 7c11812..45bc132 100644
+--- a/PlanT/dataset.py
++++ b/PlanT/dataset.py
+@@ -52,12 +52,12 @@ class PlanTDataset(Dataset):
+         else:
+             self.transform = None
+ 
+-        if self.cfg_train.augment_parked:
++        if self.cfg_train.augment_parked: #미리 저장된 정차 차량 위치 데이터 
+             self.parked_locations = {}
+             self.parked_rotations = {}
+             self.parked_extents = {}
+             self.parked_trees = {}
+-            parked_cars = np.load("/home/geiger/gwb301/code/PlanT_2_cleanup/PlanT/car_data.npy", allow_pickle=True).item()
++            parked_cars = np.load("/workspace/plant2/PlanT/car_data.npy", allow_pickle=True).item()
+             for town, data in parked_cars.items():
+                 self.parked_locations[town] = data["locations"]
+                 self.parked_rotations[town] = data["rotations"]
+@@ -72,8 +72,9 @@ class PlanTDataset(Dataset):
+         if not self.cfg_train.get("input_static_cars", False):
+             self.type_nums.pop("static_car")
+ 
+-        self.BEV = []
+-        self.labels = []
++        # PlanTDataset의 본체(index 리스트 초기화)
++        self.BEV  = []
++        self.labels = [] #(boxes)
+         self.measurements = []
+ 
+         # If you're not using a slurm cluster you can use this line instead of the one after
+@@ -81,12 +82,13 @@ class PlanTDataset(Dataset):
+         # NOTE: FOR SLURM CHANGE TO:
+         # label_raw_path_all = subprocess.run(["lfs", "find", root, "-type", "d", "-name", "boxes", "--maxdepth", "3"], capture_output=True, text=True, check=True).stdout.splitlines()
+ 
+-        label_raw_path_all = [p[:-5] for p in label_raw_path_all]
++        label_raw_path_all = [p[:-5] for p in label_raw_path_all] 
+ 
+-        label_raw_path = label_raw_path_all # Could filter here if needed
++        label_raw_path = label_raw_path_all # Could filter here if needed (경로에서 /boxes 문자열 지움)
+ 
+         logging.info(f"Found {len(label_raw_path)} results jsons.")
+ 
++        # route 필터링(학습에 쓸 수 있는 좋은 주행만 남긴다)
+         total_routes = 0
+         skipped_routes = 0
+         trainable_routes = 0
+@@ -96,7 +98,7 @@ class PlanTDataset(Dataset):
+             route = os.path.basename(route_dir)
+             total_routes += 1
+ 
+-            if self.cfg_train.get("filter_routes", True): # Can be set to false for visu
++            if self.cfg_train.get("filter_routes", True): # Can be set to false for visu 
+                 if route.startswith('FAILED_') or not os.path.isfile(route_dir + '/results.json.gz'): # or route_dir in manually_kicked:
+                     skipped_routes += 1
+                     continue
+@@ -113,7 +115,6 @@ class PlanTDataset(Dataset):
+                 if condition1 or condition2 or condition3 or condition4 or condition5:
+                     continue
+ 
+-                # Hacky
+                 if results_route["timestamp"][:4] == "Town":
+                     log_file = "qsub_out" + "_".join(results_route["timestamp"].split("_")[:3]) + ".log"
+                 else:
+@@ -121,6 +122,7 @@ class PlanTDataset(Dataset):
+ 
+                 log_file = root.rstrip("/")[:-4]+"/slurm/run_files/logs/"+log_file
+ 
++                # Hacky(겉으로는 성공, 실제로는 실패 -> 이건 논문 재현용 코드에서만 볼 수 있는 디테일)
+                 silentcrash = False
+                 with open(log_file, "r", encoding="utf8") as f:
+                     lines = f.readlines()
+@@ -141,7 +143,7 @@ class PlanTDataset(Dataset):
+             route_dir = Path(route_dir)
+             num_seq = len(os.listdir(route_dir / "boxes"))
+ 
+-            # ignore the first 5 and last two frames
++            # ignore the first 5 and last two frames  (이중 for문으로 같은 json파일이 쓰이지만 이건 같은 주행을 다른 의사결정 시점에서 학습시키기 위한 의도적인 슬라이딩 윈도우 설계)
+             for seq in range(
+                 5,
+                 num_seq - self.cfg.model.waypoints.wps_len - self.cfg_train.seq_len - 2,
+@@ -175,12 +177,12 @@ class PlanTDataset(Dataset):
+         print('Skipped routes:', skipped_routes)
+         print('Trainable routes:', trainable_routes)
+ 
+-    def __len__(self) -> int:
++    def __len__(self) -> int: #dataloader가 epoch 크기 계산할 때 사용
+         """Returns the length of the dataset."""
+         return len(self.measurements)
+ 
+-
+-    def add_parked_cars(self, sample):
++    # 정차 차량을 일부 샘플에 인위적으로 추가 
++    def add_parked_cars(self, sample): 
+         if self.cfg_train.augment_parked:
+             n = np.random.randint(0, 10)
+             if len(sample["parked_cars"]) > n:
+@@ -196,6 +198,7 @@ class PlanTDataset(Dataset):
+             del sample["parked_cars"]
+             del sample["parked_cars_quant"]
+ 
++    # getitem은 DataLoader가 배치를 만들기 위해 샘플을 하나씩 필요로 할 때 호출되고,한 epoch 동안 샘플 개수만큼 반복된다.  
+     def __getitem__(self, index):
+         """Returns the item at index idx."""
+ 
+@@ -206,9 +209,10 @@ class PlanTDataset(Dataset):
+             "input": []
+         }
+ 
++        #캐시 & 증강 판단 
+         augment = self.transform is not None and np.random.rand() < self.aug_rate
+ 
+-        # See if we can use the cache
++        # See if we can use the cache (같은 sample을 여러번 disk에서 다시 만들지 말자)
+         if augment and self.data_cache is not None:
+             if labels[0].decode()+"_aug" in self.data_cache:
+                 sample = self.data_cache[labels[0].decode()+"_aug"]
+@@ -231,6 +235,7 @@ class PlanTDataset(Dataset):
+         loaded_labels = []
+         loaded_measurements = []
+ 
++        # json 로딩 (디스크 I/O 발생)
+         for i in range(self.cfg_train.seq_len + self.cfg.model.waypoints.wps_len):
+             measurements_i = json.load(gzip.open(measurements[i]))
+             labels_i = json.load(gzip.open(labels[i]))
+@@ -238,17 +243,21 @@ class PlanTDataset(Dataset):
+             loaded_labels.append(labels_i)
+             loaded_measurements.append(measurements_i)
+ 
+-        # Extract ego waypoints
++        # Extract ego waypoints(Ego waypoint 생성=PlanT의 핵심 GT)
+         matrices = [x["ego_matrix"] for x in loaded_measurements[self.cfg_train.seq_len - 1 :]]
+-        ego_inv = np.linalg.inv(matrices[0])
+-        points = np.array(matrices[1:])[:,:,3]
+-        points = (ego_inv @ points.T).T[:,:2].tolist()
+-        sample["waypoints"] = points
++        ego_inv = np.linalg.inv(matrices[0]) #월드 좌표를 현재 ego 좌표로 변환 (inv)
++        points = np.array(matrices[1:])[:,:,3] #position x,y,z,1
++        points = (ego_inv @ points.T).T[:,:2].tolist() # 미래 ego 위치들을 현재 ego 좌표계 기준으로 반환 (초지ㅗㅇ적으로 x, y 만 씀)
++        sample["waypoints"] = points 
+ 
++        # Route / Speed / Limit 정보 
++        # 글로벌 기준 원본 route
+         sample["route_original"] = loaded_measurements[self.cfg_train.seq_len - 1]["route_original"][:20]
++        # ego 기준으로 변환된 route
+         sample["route"] = interpolate_route(loaded_measurements[self.cfg_train.seq_len - 1]["route"][:20])
+-
++        # expert가 의도한 목표 속도 
+         sample["target_speed"] = loaded_measurements[self.cfg_train.seq_len - 1]["target_speed"]
++        # 현재 ego 실제 속도 
+         sample["ego_speed"] = loaded_measurements[self.cfg_train.seq_len - 1]["speed"]
+ 
+         speed_limit = loaded_measurements[self.cfg_train.seq_len - 1]["speed_limit"]
+@@ -258,7 +267,7 @@ class PlanTDataset(Dataset):
+         if loaded_measurements[self.cfg_train.seq_len - 1]["brake"]: # Just in case
+             sample["target_speed"] = 0.0
+ 
+-        if self.cfg_train.get("input_bev", False):
++        if self.cfg_train.get("input_bev", False): #bev 추가로 공간 컨텍스트 
+             bev = Image.open(self.BEV[index].decode())
+             bev = pil_to_tensor(bev)
+             bev = torch.rot90(bev, dims=(1, 2))
+@@ -270,7 +279,8 @@ class PlanTDataset(Dataset):
+                 bev_aug = pil_to_tensor(bev_aug)
+                 bev_aug = torch.rot90(bev_aug, dims=(1, 2))
+                 sample["BEV_aug"] = self.bev_colors[bev_aug[0, 64:-64, 64:-64].to(torch.int)].permute(2, 0, 1)
+-
++        
++        # autmentation 파라미터 저장 
+         sample["augmentation_translation"] = loaded_measurements[self.cfg_train.seq_len - 1]["augmentation_translation"]
+         sample["augmentation_rotation"] = loaded_measurements[self.cfg_train.seq_len - 1]["augmentation_rotation"]
+ 
+@@ -287,7 +297,7 @@ class PlanTDataset(Dataset):
+         sample["ego_pos"] = measurements_data["pos_global"]
+         sample["ego_rot"] = ego_yaw
+ 
+-        # Fix static extents and drop irrelevant objects
++        # Fix static extents and drop irrelevant objects 객체 필터링 & 정규화 
+         for x in labels_data:
+             if "position" in x:
+                 pos_x, pos_y, pos_z = x["position"]
+@@ -330,6 +340,7 @@ class PlanTDataset(Dataset):
+                 else:
+                     print("missing static car:", x["mesh_path"])
+ 
++        #input object tocken 생성 (동적인 객체만 input token으로 사용, 이 줄이 Transformer에 들어가는 객체 토큰 하나)
+         input_objects = [
+                 [
+                     self.type_nums[x["class"].lower()],  # type indicator
+@@ -360,7 +371,7 @@ class PlanTDataset(Dataset):
+             if x["class"].lower() not in self.car_types and x["class"].lower() in self.type_nums.keys() and (x["class"].lower()!="traffic_light" or (x["state"] in ["Red", "Yellow"] and x["affects_ego"])) and (x["class"]!="stop_sign" or x["affects_ego"])
+         ]
+ 
+-        # Load output (forecasting) objects
++        # Load output (forecasting) objects (input 객체들과 동일한 ID를 기준으로 미래의 객체 상태를 ego 기준 좌표계로 변환해 object forecasting GT)
+         offset = 1
+         measurements_data_out = loaded_measurements[self.cfg_train.seq_len - 1 + offset]
+         labels_data_all_out = loaded_labels[self.cfg_train.seq_len - 1 + offset]
+@@ -387,6 +398,7 @@ class PlanTDataset(Dataset):
+ 
+         output_objects_quantized = self.quantize_box(output_objects_matched)
+ 
++        #output object
+         sample["output_floating"] = output_objects_matched
+         sample["output"] = output_objects_quantized
+ 
+@@ -435,7 +447,7 @@ class PlanTDataset(Dataset):
+ 
+         return sample
+     
+-    def aug_sample(self, sample):
++    def aug_sample(self, sample): #실제 데이터 증강 (장면 전체를 rigid transform 하는 증강)
+         # In transfuser, translation gets subtracted and applied first
+         translate = - np.array([0.0, sample["augmentation_translation"]])
+         # In transfuser multiplizieren die R von links und transposen beides?
+@@ -652,6 +664,6 @@ if __name__=="__main__":
+ 
+     cfg = DictAsMember(cfg)
+ 
+-    ds = PlanTDataset("/home/simon/PlanT_2_cleanup/PlanT_2_2025_07_24/data", cfg)
++    ds = PlanTDataset("/workspace/data/PlanT_2_dataset", cfg)
+ 
+     print(generate_batch([ds[255], ds[256], ds[257]]).keys())
+diff --git a/PlanT/plant_variables.py b/PlanT/plant_variables.py
+index f81f5b2..85bef91 100644
+--- a/PlanT/plant_variables.py
++++ b/PlanT/plant_variables.py
+@@ -5,7 +5,7 @@ class PlanTVariables:
+                 [0.75, 0.25, 0.25], # All lines: Red
+                 [0.25, 0.75, 0.25]] # Broken lines: Green
+     
+-    speed_cats = {50: 0, 80: 1, 100: 2, 120: 3}
++    speed_cats = {50: 0, 80: 1, 100: 2, 120: 3} #환경조건(ego가 따라야 하는 조건)
+ 
+     class_nums = {# "ego_car": 1.0,
+                     "car": 1.0,
+@@ -18,6 +18,6 @@ class PlanTVariables:
+                     "emergency": 6.0
+                  }
+     
+-    car_types = ["car", "walker","emergency"]
++    car_types = ["car", "walker","emergency"] #동적 객체로 취급할 클래스 목록
+ 
+-    target_speeds = [0.0, 4.0, 8.0, 10, 13.88888888, 16, 17.77777777, 20]
+\ No newline at end of file
++    target_speeds = [0.0, 4.0, 8.0, 10, 13.88888888, 16, 17.77777777, 20] #ego 차량이 target speed 후보 값들
+\ No newline at end of file
+diff --git a/PlanT/train_plant.sh b/PlanT/train_plant.sh
+index bfd06f6..ed46434 100644
+--- a/PlanT/train_plant.sh
++++ b/PlanT/train_plant.sh
+@@ -21,7 +21,7 @@ echo $DS
+ 
+ # This is specifically for the slurm cluster so the dataset is on the ssd
+ date
+-unzip -q ~/data/PlanT_dataset.zip -d $DS
++unzip -q ~/data/PlanT2_DS.zip -d $DS
+ date
+ 
+ python -u lit_train.py
+\ No newline at end of file

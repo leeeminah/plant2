@@ -1,0 +1,40 @@
+{
+  "os": "Linux-6.8.0-90-generic-x86_64-with-glibc2.35",
+  "python": "CPython 3.10.16",
+  "startedAt": "2026-01-12T08:32:30.013327Z",
+  "program": "/workspace/plant2/PlanT/lit_train.py",
+  "codePath": "PlanT/lit_train.py",
+  "git": {
+    "remote": "https://github.com/leeeminah/plant2.git",
+    "commit": "0b42df10e26196ab4acfe19ed03eb957f3650bbe"
+  },
+  "root": "/workspace/plant2/PlanT/outputs/PlanT2_train/DEBUG/2026-01-12_08-32-15",
+  "host": "1522a3583f6d",
+  "executable": "/opt/conda/envs/plant2/bin/python",
+  "cpu_count": 8,
+  "cpu_count_logical": 16,
+  "gpu": "NVIDIA GeForce RTX 3060 Ti",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "195722883072",
+      "used": "159817293824"
+    }
+  },
+  "memory": {
+    "total": "67329986560"
+  },
+  "cpu": {
+    "count": 8,
+    "countLogical": 16
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GeForce RTX 3060 Ti",
+      "memoryTotal": "8589934592",
+      "cudaCores": 4864,
+      "architecture": "Ampere"
+    }
+  ],
+  "cudaVersion": "12.4"
+}

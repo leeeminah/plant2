@@ -1,2 +1,10 @@
 *__pycache__*
+<<<<<<< HEAD
 *.ckpt
+=======
+*.ckpt*.tar.gz
+*.tar
+*.tar.gz
+*.tar.gz
+*.tar
+>>>>>>> origin/main

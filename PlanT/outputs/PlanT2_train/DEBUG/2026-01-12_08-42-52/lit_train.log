@@ -1,0 +1,5 @@
+[2026-01-12 08:43:07,788][root][INFO] - Found 5562 results jsons.
+[2026-01-12 08:44:27,156][timm.models._builder][INFO] - Loading pretrained weights from Hugging Face hub (timm/resnet18.a1_in1k)
+[2026-01-12 08:44:27,358][timm.models._hub][INFO] - [timm/resnet18.a1_in1k] Safe alternative available for 'pytorch_model.bin' (as 'model.safetensors'). Loading weights using safetensors.
+[2026-01-12 08:44:27,381][timm.models._builder][INFO] - Missing keys (fc.weight, fc.bias) discovered while loading pretrained weights. This is expected if model is being adapted.
+[2026-01-12 08:44:27,485][model][INFO] - number of parameters: 3.718394e+07

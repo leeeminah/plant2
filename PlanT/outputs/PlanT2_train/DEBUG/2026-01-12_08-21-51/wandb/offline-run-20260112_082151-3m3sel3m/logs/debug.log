@@ -1,0 +1,23 @@
+2026-01-12 08:21:51,587 INFO    MainThread:20255 [wandb_setup.py:_flush():67] Current SDK version is 0.19.8
+2026-01-12 08:21:51,587 INFO    MainThread:20255 [wandb_setup.py:_flush():67] Configure stats pid to 20255
+2026-01-12 08:21:51,587 INFO    MainThread:20255 [wandb_setup.py:_flush():67] Loading settings from /root/.config/wandb/settings
+2026-01-12 08:21:51,587 INFO    MainThread:20255 [wandb_setup.py:_flush():67] Loading settings from /workspace/plant2/PlanT/outputs/PlanT2_train/DEBUG/2026-01-12_08-21-51/wandb/settings
+2026-01-12 08:21:51,587 INFO    MainThread:20255 [wandb_setup.py:_flush():67] Loading settings from environment variables
+2026-01-12 08:21:51,587 INFO    MainThread:20255 [wandb_init.py:setup_run_log_directory():647] Logging user logs to /workspace/plant2/PlanT/outputs/PlanT2_train/DEBUG/2026-01-12_08-21-51/wandb/offline-run-20260112_082151-3m3sel3m/logs/debug.log
+2026-01-12 08:21:51,587 INFO    MainThread:20255 [wandb_init.py:setup_run_log_directory():648] Logging internal logs to /workspace/plant2/PlanT/outputs/PlanT2_train/DEBUG/2026-01-12_08-21-51/wandb/offline-run-20260112_082151-3m3sel3m/logs/debug-internal.log
+2026-01-12 08:21:51,587 INFO    MainThread:20255 [wandb_init.py:init():761] calling init triggers
+2026-01-12 08:21:51,587 INFO    MainThread:20255 [wandb_init.py:init():766] wandb.init called with sweep_config: {}
+config: {'_wandb': {}}
+2026-01-12 08:21:51,587 INFO    MainThread:20255 [wandb_init.py:init():784] starting backend
+2026-01-12 08:21:51,793 INFO    MainThread:20255 [wandb_init.py:init():788] sending inform_init request
+2026-01-12 08:21:51,802 INFO    MainThread:20255 [backend.py:_multiprocessing_setup():101] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2026-01-12 08:21:51,802 INFO    MainThread:20255 [wandb_init.py:init():798] backend started and connected
+2026-01-12 08:21:51,806 INFO    MainThread:20255 [wandb_init.py:init():891] updated telemetry
+2026-01-12 08:21:51,810 INFO    MainThread:20255 [wandb_init.py:init():915] communicating run to backend with 90.0 second timeout
+2026-01-12 08:21:51,918 INFO    MainThread:20255 [wandb_init.py:init():990] starting run threads in backend
+2026-01-12 08:21:52,000 INFO    MainThread:20255 [wandb_run.py:_console_start():2375] atexit reg
+2026-01-12 08:21:52,000 INFO    MainThread:20255 [wandb_run.py:_redirect():2227] redirect: wrap_raw
+2026-01-12 08:21:52,000 INFO    MainThread:20255 [wandb_run.py:_redirect():2292] Wrapping output streams.
+2026-01-12 08:21:52,000 INFO    MainThread:20255 [wandb_run.py:_redirect():2315] Redirects installed.
+2026-01-12 08:21:52,001 INFO    MainThread:20255 [wandb_init.py:init():1032] run started, returning control to user process
+2026-01-12 08:21:52,920 INFO    MsgRouterThr:20255 [mailbox.py:close():129] Closing mailbox, abandoning 0 handles.

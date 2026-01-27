@@ -1,0 +1,59 @@
+cfg:
+  user:
+    working_dir: /workspace/plant2
+  model:
+    name: PlanT
+    waypoints:
+      representation: path+wps
+      generator: linear
+      path_len: 20
+      wps_len: 8
+      bins_speed: 8
+      path_weight: 5
+      wps_weight: 1
+      speed_weight: 1
+      gru_hidden_size: 64
+    training:
+      range: 50
+      range_factor_front: 2
+      input_ego_speed: false
+      input_bev: true
+      input_static_cars: true
+      max_epochs: 30
+      batch_size: 128
+      learning_rate: 0.0001
+      betas:
+      - 0.9
+      - 0.95
+      grad_norm_clip: 1.0
+      weight_decay: 0.1
+      log_path: log/
+      num_workers: 16
+      seq_len: 1
+      augment: true
+      augment_parked: true
+    pre_training:
+      forecastLoss_weight: 1
+      future_timestep: 1
+      quantize: true
+      precision_pos: 7
+      precision_speed: 5
+      precision_angle: 5
+    network:
+      hf_checkpoint: prajjwal1/bert-medium
+      use_dropout: true
+      embd_pdrop: 0.1
+  exp_folder_name: PlanT2_train
+  lrDecay_epoch: 29
+  debug: false
+  visualize: false
+  overfit: 0
+  resume: true
+  resume_path: ''
+  use_caching: true
+  custom_sampler: false
+  gpus: 1
+  expname: DEBUG
+  wandb_name: training_PlanT_gpus=1
+  save_dir: outputs/PlanT2_train/DEBUG/gpus=1/2026-01-12_11-12-47
+  data_dir: /workspace/data/PlanT_2_dataset/data

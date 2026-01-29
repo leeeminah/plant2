@@ -13,10 +13,10 @@ import wandb
 
 from util.logging import setup_logging, sync_wandb
 # from dataloader import get_dataloader
-from lit_module import LitHFLM
+from lit_module_race import LitHFLM
 
-from dataset import generate_batch
-from dataset import PlanTDataset
+from dataset_race import generate_batch
+from dataset_race import PlanTDataset
 from torch.utils.data import DataLoader
 
 @hydra.main(config_path=f"config", config_name="config")
@@ -36,7 +36,7 @@ def main(cfg):
         overfit = cfg.overfit
 
     # use data caching for ML-Cloud #TODO
-    # shared_dict = None
+    shared_dict = None
     # if cfg.use_caching:
     #     from diskcache import Cache
     #     # tmp_folder = os.environ.get('DS_LOCAL')
@@ -99,7 +99,7 @@ def main(cfg):
 
     checkpoint_callback = pl.callbacks.ModelCheckpoint(
         save_top_k=3,
-        monitor='train/loss',
+        monitor='train/loss_all',
         mode='min',
         dirpath=os.path.join(cfg.user.working_dir, "PlanT/checkpoints"),
         filename=out_path, # TODO config
@@ -110,7 +110,8 @@ def main(cfg):
     checkpoint_callback.CHECKPOINT_NAME_LAST = f"last_{seed}"
 
     # dataset = PlanTDataset(os.environ.get('DS')+"/data", cfg, shared_dict=shared_dict)
-    dataset = PlanTDataset(os.environ.get('DS')+"/data", cfg, shared_dict=shared_dict)
+    
+    dataset = PlanTDataset(os.environ.get('DS'), cfg, shared_dict=shared_dict)
 
     train_loader = DataLoader(
         dataset,
@@ -136,7 +137,7 @@ def main(cfg):
             # strategy="ddp_find_unused_parameters_true",
             strategy="ddp",
             # replace_sampler_ddp=replace_sampler_ddp,
-            logger=[csvlogger, wandblogger, TBlogger],
+            # logger=[csvlogger, wandblogger, TBlogger],
             log_every_n_steps=5,
             # resume_from_checkpoint=resume_path,
             check_val_every_n_epoch=2,

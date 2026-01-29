@@ -634,10 +634,11 @@ def main():
     blueprint_library = world.get_blueprint_library()
     vehicle_bp = blueprint_library.filter('vehicle.tesla.model3')[0]
 
-    global_path = load_global_path('town04_max25_start4.pkl')
+    global_path = load_global_path('town04_max30_start1.pkl')
 
     # Global path 시작점에 spawn
     first_wp = global_path[0]
+    print(first_wp)
     spawn_transform = carla.Transform(
         carla.Location(x=first_wp['x'], y=first_wp['y'], z=first_wp['z'] + 0.5),
         carla.Rotation(yaw=np.rad2deg(first_wp['yaw']))

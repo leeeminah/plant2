@@ -1,0 +1,17 @@
+# outputs / logs
+outputs/
+
+# checkpoints / models
+*.ckpt
+*.pth
+*.pt
+
+# pickle
+*.pkl
+
+# python cache
+__pycache__/
+*.pyc
+
+# accidental copies
+*copy*

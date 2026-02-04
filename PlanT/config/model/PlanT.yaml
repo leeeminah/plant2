@@ -35,8 +35,8 @@ training:
   log_path: log/
   num_workers: 16 # for DataLoader
   seq_len: 1
-  augment: True
-  augment_parked: True
+  augment: False
+  augment_parked: False
 
 pre_training:
   forecastLoss_weight: 1

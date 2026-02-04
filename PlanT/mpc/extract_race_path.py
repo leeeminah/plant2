@@ -617,7 +617,7 @@ def main():
     
     planner = CarlaRacelinePlanner(world, track_width=5.0, routes_dir='./routes')
     
-    centerline, headings = planner.load_global_path('town04_max30_start1.pkl')
+    centerline, headings = planner.load_global_path('town04_max30_start13.pkl')
     
     if centerline is None:
         return
@@ -684,15 +684,15 @@ def main():
     # Save all
     kappa_shortest = planner._compute_curvature(raceline_shortest)
     v_shortest = planner.compute_velocity_profile(raceline_shortest, kappa_shortest, v_max=30.0, a_lat_max=8.0)
-    planner.save_raceline('town04_raceline_shortest.pkl', raceline_shortest, alpha_shortest,
+    planner.save_raceline('town04_raceline_shortest13.pkl', raceline_shortest, alpha_shortest,
                          v_shortest, kappa_shortest, headings, {'method': 'shortest_path'})
     
     kappa_mincurv = planner._compute_curvature(raceline_mincurv)
     v_mincurv = planner.compute_velocity_profile(raceline_mincurv, kappa_mincurv, v_max=30.0, a_lat_max=8.0)
-    planner.save_raceline('town04_raceline_mincurv.pkl', raceline_mincurv, alpha_mincurv,
+    planner.save_raceline('town04_raceline_mincurv13.pkl', raceline_mincurv, alpha_mincurv,
                          v_mincurv, kappa_mincurv, headings, {'method': 'minimum_curvature'})
     
-    planner.save_raceline('town04_raceline_optimal.pkl', raceline_optimal, alpha_optimal,
+    planner.save_raceline('town04_raceline_optimal13.pkl', raceline_optimal, alpha_optimal,
                          v_profile, kappa_optimal, headings,
                          {'method': 'optimal_blend', 'sector_weights': weights.tolist()})
     

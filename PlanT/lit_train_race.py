@@ -104,7 +104,7 @@ def main(cfg):
         dirpath=os.path.join(cfg.user.working_dir, "PlanT/checkpoints"),
         filename=out_path, # TODO config
         save_last=True,
-        every_n_epochs=10,
+        every_n_epochs=5,
         save_on_train_epoch_end=True
     )
     checkpoint_callback.CHECKPOINT_NAME_LAST = f"last_{seed}"

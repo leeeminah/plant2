@@ -638,7 +638,7 @@ def interpolate_route(points):
 
     return interp_points
 
-def generate_batch(data_batch):
+def generate_batch(data_batch): # PlanT Transfomer가 바로 먹을 수 있는 최종 배치 딕셔너리를 만들어주는 함수 
     maxseq = max([len(sample["input"]) for sample in data_batch])
     B = len(data_batch)
 
@@ -653,7 +653,6 @@ def generate_batch(data_batch):
         keys.append("mpc_controls")
 
     batches = {key: [] for key in keys}
-
     n = 1  # Padding is 0
 
     for i, sample in enumerate(data_batch):

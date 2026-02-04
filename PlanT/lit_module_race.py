@@ -49,134 +49,12 @@ class LitHFLM(pl.LightningModule):
         )
         return [optimizer], [scheduler]
 
-    # def training_step(self, batch, batch_idx):
-    #     waypoints_batch = batch["waypoints"]
-    #     path_batch = batch["route"]
-    #     # path_batch = path_batch[..., :self.cfg.model.waypoints.path_len, :]
-
-    #     targetspeed_batch = batch["target_speed"]
-
-    #     # MPC controls
-    #     if "mpc_controls" in batch:
-    #         mpc_controls_batch = batch["mpc_controls"]  # (B, T, 2)
-        
-    #     logits, targets, pred_plan, _ = self(batch)
-        
-    #     losses = {}
-        
-    #     (pred_path, pred_wps, pred_speed, pred_controls) = pred_plan  
-
-    #     # logits, targets, pred_plan, _ = self(batch)
-
-    #     # losses = {}
-
-    #     # (pred_path, pred_wps, pred_speed) = pred_plan
-
-    #     if pred_wps is not None:
-    #         losses["loss_wp"] = F.l1_loss(pred_wps, waypoints_batch)
-
-    #     if pred_path is not None:
-    #         losses["loss_path"] = F.l1_loss(pred_path, path_batch)
-
-    #     if pred_speed is not None:
-    #         target_speeds = torch.tensor(self.plant_variables.target_speeds, device=targetspeed_batch.device)
-    #         brake = torch.zeros_like(targetspeed_batch, dtype=torch.bool, device=targetspeed_batch.device)
-    #         twohot_targs = self.get_two_hot_encoding(targetspeed_batch, target_speeds, brake)
-
-    #         losses["loss_egospeed"] = self.criterion_speed(pred_speed, twohot_targs)
-
-    #     losses_forecast = [
-    #         torch.mean(self.criterion_forecast(logits[i], targets[i].squeeze()))
-    #         for i in range(len(logits))
-    #     ]
-    #     losses["loss_forecast"] = torch.mean(torch.stack(losses_forecast))
-
-    #     # NEW: MPC control loss
-    #     if pred_controls is not None and "mpc_controls" in batch:
-    #         # losses["loss_mpc_accel"] = F.mse_loss(
-    #         #     pred_controls[..., 0], 
-    #         #     mpc_controls_batch[..., 0]
-    #         # )
-    #         # losses["loss_mpc_curvature"] = F.mse_loss(
-    #         #     pred_controls[..., 1], 
-    #         #     mpc_controls_batch[..., 1]
-    #         # )
-            
-    #         # 또는 combined loss
-    #         losses["loss_mpc_controls"] = F.mse_loss(pred_controls, mpc_controls_batch)
-        
-
-    #     for name, loss in losses.items():
-    #         self.log(
-    #             f"train/{name}",
-    #             loss,
-    #             on_step=False,
-    #             on_epoch=True,
-    #             prog_bar=True,
-    #             sync_dist=self.cfg.gpus > 1,
-    #             batch_size=self.cfg.model.training.batch_size,
-    #         )
-
-    #     weights = {
-    #         "loss_wp": self.cfg.model.waypoints.get("wp_weight", 1), 
-    #         "loss_forecast": self.cfg.model.pre_training.get("forecastLoss_weight", 0),
-    #         "loss_path": self.cfg.model.waypoints.get("path_weight", 1),
-    #         "loss_egospeed": self.cfg.model.waypoints.get("speed_weight", 1),
-    #         "loss_mpc_controls": self.cfg.model.get("mpc_control_weight", 1.0),
-    #     }
-
-    #     loss_all = sum([loss*weights[name] for name, loss in losses.items()])
-
-    #     self.log(
-    #         "train/loss_all",
-    #         loss_all,
-    #         on_step=False,
-    #         on_epoch=True,
-    #         prog_bar=True,
-    #         sync_dist=self.cfg.gpus > 1,
-    #         batch_size=self.cfg.model.training.batch_size,
-    #     )
-
-    #     # Forecasting metrics (수정!)
-    #     if logits is not None and targets is not None:
-    #         for i, name in enumerate(["x", "y", "yaw", "speed"]):
-    #             if i >= len(logits):
-    #                 break
-                
-    #             self.log(
-    #                 f"train/loss_{name}",
-    #                 losses_forecast[i],
-    #                 on_step=False,
-    #                 on_epoch=True,
-    #                 prog_bar=False,
-    #                 sync_dist=self.cfg.gpus > 1,
-    #                 batch_size=self.cfg.model.training.batch_size,
-    #             )
-
-    #             mask = targets[i].squeeze() != -999
-                
-    #             if mask.sum() > 0:
-    #                 self.metrics_forecasting_acc[i](
-    #                     logits[i][mask], targets[i][mask].squeeze()
-    #                 )
-    #                 self.log(
-    #                     f"train/acc_{name}",
-    #                     self.metrics_forecasting_acc[i],
-    #                     on_step=False,
-    #                     on_epoch=True,
-    #                     prog_bar=False,
-    #                     sync_dist=self.cfg.gpus > 1,
-    #                     batch_size=self.cfg.model.training.batch_size,
-    #                 )
-
-    #     return loss_all
-
     def training_step(self, batch, batch_idx):
         waypoints_batch = batch["waypoints"]
         path_batch = batch["route"]
         targetspeed_batch = batch["target_speed"]
 
-        # ✅ MPC controls
+        # MPC controls
         mpc_controls_batch = batch.get("mpc_controls")
         
         logits, targets, pred_plan, _ = self(batch)
@@ -223,7 +101,7 @@ class LitHFLM(pl.LightningModule):
         weights = {
             "loss_wp": self.cfg.model.waypoints.get("wp_weight", 1), 
             # "loss_forecast": self.cfg.model.pre_training.get("forecastLoss_weight", 0),
-            "loss_path": self.cfg.model.waypoints.get("path_weight", 1),
+            # "loss_path": self.cfg.model.waypoints.get("path_weight", 1),
             "loss_egospeed": self.cfg.model.waypoints.get("speed_weight", 1),
             "loss_mpc_controls": self.cfg.model.get("mpc_control_weight", 1.0),  # ✅ 추가
         }

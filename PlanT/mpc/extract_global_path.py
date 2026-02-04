@@ -214,7 +214,7 @@ def main():
     print("🚀 Extracting full map centerline...")
     centerline = extract_global_centerline_full_map(
         world, 
-        start_idx=1,      # spawn point index
+        start_idx=13,      # spawn point index
         spacing=2.0       # 간격 (m)
     )
     
@@ -222,7 +222,7 @@ def main():
         print("Failed to extract centerline")
         return
     
-    save_centerline(centerline, 'town04_max30_start1.pkl')
+    save_centerline(centerline, 'town04_max30_start13.pkl')
     
     # 확인용 출력
     print(f"\nStatistics:")

@@ -215,7 +215,7 @@ def main():
     # 시각화 시작
     visualizer = MPCVisualizer(
         world,
-        route_file='routes/town04_racepath_0126_1.pkl'
+        route_file='routes/town04_raceline_mincurv.pkl'
     )
     
     visualizer.run(update_hz=10)  # 10Hz 업데이트

@@ -454,7 +454,7 @@ class MPCPlanTAgent:
                 # ② feedback gain scheduling
                 if is_straight:
                     # 직선에서는 MPC를 "미세 보정기"로
-                    kappa_cmd_raw = 0.1 * kappa_fb + kappa_ff
+                    kappa_cmd_raw = kappa_fb + kappa_ff
                 else:
                     # 곡선에서는 MPC 풀 파워
                     kappa_cmd_raw = kappa_fb + kappa_ff
@@ -550,8 +550,8 @@ class PlanTDataCollector:
     """Quality-controlled data collector"""
     
     def __init__(self, save_dir='./mpc_plant_dataset_quality', town='Town04'):
-        # self.client = carla.Client('172.22.39.179', 2000)
-        self.client = carla.Client('172.22.39.145', 2000)
+        self.client = carla.Client('172.22.39.175', 2000)
+        # self.client = carla.Client('172.22.39.145', 2000)
         self.client.set_timeout(10.0)
         self.world = self.client.load_world(town)
         self.town = town
@@ -935,12 +935,12 @@ def main():
     """Main entry point"""
     
     collector = PlanTDataCollector(
-        save_dir='./mpc_plant_dataset_completed',  # ✅ 완주만
+        save_dir='./mpc_plant_dataset_completed0208_50',  # ✅ 완주만
         town='Town04'
     )
     
     raceline_files = [
-        'routes/town04_raceline_mincurv13.pkl',
+        'routes/town04_raceline_mincurv13_1.pkl',
     ]
     
     for raceline_file in raceline_files:

@@ -380,6 +380,7 @@ class MPCRaceController:
                 v_k = max(current_state[3], 2.0)
             else:
                 # Future steps: use reference velocity (target)
+                # v_k = max(ref_traj[3, k] * 3, current_state[3], 2.0)
                 v_k = max(ref_traj[3, k] * 3, current_state[3], 2.0)
                 # v_k = max(ref_traj[3, k]*0.5 + 0.5*current_state[3], 2.0)
 
@@ -531,7 +532,7 @@ class MPCRaceController:
             # ② feedback gain scheduling
             if is_straight:
                 # 직선에서는 MPC를 "미세 보정기"로
-                kappa_cmd_raw = 0.1 * kappa_fb + kappa_ff
+                kappa_cmd_raw = kappa_fb + kappa_ff
             else:
                 # 곡선에서는 MPC 풀 파워
                 kappa_cmd_raw = kappa_fb + kappa_ff
@@ -942,8 +943,8 @@ def main():
     """Main function"""
     
     print("Connecting to CARLA...")
-    # client = carla.Client('172.22.39.179', 2000)
-    client = carla.Client('172.22.39.145', 2000)
+    client = carla.Client('172.22.39.175', 2000)
+    # client = carla.Client('172.22.39.145', 2000)
     client.set_timeout(10.0)
     
     world = client.load_world('Town04')
@@ -962,7 +963,7 @@ def main():
 
 
     # ==================== CommonRoad Raceline 로드 ====================
-    raceline, metadata = load_raceline('routes/town04_raceline_mincurv13.pkl')
+    raceline, metadata = load_raceline('routes/town04_raceline_mincurv13_1.pkl')
     # (yaw는 이미 재계산됨)
     # ===================================================================
 

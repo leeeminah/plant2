@@ -8,69 +8,14 @@ import time
 import pickle
 from mpc_control_agent import MPCControlAgent
 
-def load_raceline(filename='town04_raceline_mincurv.pkl'):
-    """
-    CommonRoad raceline 로드 (velocity, curvature 포함)
-    
-    Returns:
-        raceline: list of dict with keys [x, y, z, yaw, velocity, curvature, s]
-        metadata: dict with method and source info
-    """
-    with open(filename, 'rb') as f:
-        data = pickle.load(f)
-    
-    raceline = data['raceline']
-    metadata = data.get('metadata', {})
-    
-    print(f"Loaded raceline: {len(raceline)} waypoints")
-    print(f"  Method: {metadata.get('method', 'unknown')}")
-    print(f"  Source: {metadata.get('source', 'unknown')}")
-    
-    # ==================== YAW OFFSET 계산 ====================
-    # 첫 두 waypoint로 실제 진행 방향 계산
-    first_wp = raceline[0]
-    second_wp = raceline[1]
-    
-    dx = second_wp['x'] - first_wp['x']
-    dy = second_wp['y'] - first_wp['y']
-    actual_yaw = np.arctan2(dy, dx)
-    
-    # CommonRoad yaw와의 차이 = offset
-    yaw_offset = actual_yaw - first_wp['yaw']
-    
-    # Wrap to [-pi, pi]
-    yaw_offset = np.arctan2(np.sin(yaw_offset), np.cos(yaw_offset))
-    
-    print(f"  YAW coordinate transform:")
-    print(f"    CommonRoad yaw: {np.rad2deg(first_wp['yaw']):.2f}°")
-    print(f"    Actual direction: {np.rad2deg(actual_yaw):.2f}°")
-    print(f"    Offset: {np.rad2deg(yaw_offset):.2f}°")
-    
-    # 모든 waypoint에 offset 적용
-    for wp in raceline:
-        wp['yaw_original'] = wp['yaw']  # 원본 백업
-        wp['yaw'] = wp['yaw'] + yaw_offset  # offset 적용
-        # Wrap to [-pi, pi]
-        wp['yaw'] = np.arctan2(np.sin(wp['yaw']), np.cos(wp['yaw']))
-    
-    print(f"    ✅ Applied offset to all {len(raceline)} waypoints")
-    # ====================================================
-    
-    # 통계 출력
-    velocities = [wp['velocity'] for wp in raceline]
-    curvatures = [abs(wp['curvature']) for wp in raceline]
-    
-    print(f"  Velocity: {min(velocities):.1f} - {max(velocities):.1f} m/s "
-          f"({min(velocities)*3.6:.1f} - {max(velocities)*3.6:.1f} km/h)")
-    print(f"  Max |curvature|: {max(curvatures):.4f} (1/m)")
-    
-    return raceline, metadata
-
 def run_town04_racing():
     """Run racing in Town04 with learned MPC controls"""
     
     # ==================== CARLA Setup ====================
-    client = carla.Client('localhost', 2000)
+    # client = carla.Client('localhost', 2000)
+    client = carla.Client('172.22.39.175', 2000)
+    # client = carla.Client('172.22.39.179', 2000)
+    # client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
     world = client.load_world('Town04')
     
@@ -80,25 +25,25 @@ def run_town04_racing():
     settings.fixed_delta_seconds = 0.05  # 20 Hz
     world.apply_settings(settings)
     
-    # ==================== Load raceline ====================
-    # import pickle
-    # with open('mpc/routes/town04_raceline_mincurv.pkl', 'rb') as f:
-    #     data = pickle.load(f)
-    # raceline = data['raceline']
-    raceline, metadata = load_raceline('mpc/routes/town04_raceline_mincurv.pkl')
+    # ==================== Initialize agent (with raceline) ====================
+    # checkpoint_path = "/workspace/plant2/PlanT/checkpoints_0209_30scenario/epoch=029_2.ckpt"\
+    checkpoint_path = "/workspace/plant2/PlanT/checkpoints_0208_2(controlweight=1andtargetspeed=current)/epoch=029_1.ckpt"
+    # checkpoint_path = "/workspace/plant2/PlanT/checkpoints/epoch=029_1.ckpt"
+    raceline_file = 'mpc/routes/town04_raceline_mincurv13_1.pkl'
     
-    print(f"Loaded raceline: {len(raceline)} waypoints")
+    agent = MPCControlAgent(checkpoint_path, raceline_file)
     
-    # ==================== Spawn vehicle (SAFE VERSION) ====================
+    # ==================== Spawn vehicle ====================
     blueprint_library = world.get_blueprint_library()
     vehicle_bp = blueprint_library.filter('vehicle.tesla.model3')[0]
 
-    first_wp = raceline[0]  # dict: x, y, yaw
+    # Use first waypoint from raceline
+    first_wp = agent.raceline[0]
 
     print(f"\n📍 Spawn from raceline[0]")
     print(f"   x={first_wp['x']:.2f}, y={first_wp['y']:.2f}, yaw={np.rad2deg(first_wp['yaw']):.2f}°")
 
-    # --- Project to road to get correct Z ---
+    # Project to road
     map_obj = world.get_map()
     test_loc = carla.Location(x=first_wp['x'], y=first_wp['y'], z=0.0)
     road_wp = map_obj.get_waypoint(test_loc, project_to_road=True)
@@ -111,14 +56,8 @@ def run_town04_racing():
         print("   ⚠️ Road waypoint not found, fallback z=1.0")
 
     spawn_transform = carla.Transform(
-        carla.Location(
-            x=first_wp['x'],
-            y=first_wp['y'],
-            z=spawn_z
-        ),
-        carla.Rotation(
-            yaw=np.rad2deg(first_wp['yaw'])
-        )
+        carla.Location(x=first_wp['x'], y=first_wp['y'], z=spawn_z),
+        carla.Rotation(yaw=np.rad2deg(first_wp['yaw']))
     )
 
     vehicle = None
@@ -144,60 +83,26 @@ def run_town04_racing():
         raise RuntimeError("❌ Failed to spawn vehicle after multiple attempts")
 
     time.sleep(0.5)
-    
-    # ==================== Initialize agent ====================
-    checkpoint_path = "/workspace/plant2/PlanT/checkpoints/epoch=029_3.ckpt"
-    agent = MPCControlAgent(checkpoint_path)
-    
-    # ==================== Helper functions ====================
-    def get_lookahead_waypoints(ego_transform, raceline, lookahead=20):
-        """Get local waypoints from raceline"""
-        ego_x = ego_transform.location.x
-        ego_y = ego_transform.location.y
-        ego_yaw = np.deg2rad(ego_transform.rotation.yaw)
-        
-        # Find closest point
-        min_dist = float('inf')
-        closest_idx = 0
-        for i, wp in enumerate(raceline):
-            dx = wp['x'] - ego_x
-            dy = wp['y'] - ego_y
-            dist = np.sqrt(dx**2 + dy**2)
-            if dist < min_dist:
-                min_dist = dist
-                closest_idx = i
-        
-        # Extract lookahead
-        local_wps = []
-        cos_yaw = np.cos(-ego_yaw)
-        sin_yaw = np.sin(-ego_yaw)
-        
-        for i in range(lookahead):
-            idx = (closest_idx + i) % len(raceline)
-            wp = raceline[idx]
-            
-            # Global → Local
-            dx = wp['x'] - ego_x
-            dy = wp['y'] - ego_y
-            
-            local_x = cos_yaw * dx - sin_yaw * dy
-            local_y = sin_yaw * dx + cos_yaw * dy
-            
-            local_wps.append([local_x, local_y])
-        
-        return np.array(local_wps), closest_idx
+     # ✅ 디버깅 플래그
+    DEBUG_VERBOSE = True
     
     # ==================== Main loop ====================
     spectator = world.get_spectator()
 
     dt = 0.05
     last_tick = time.time()
-    
+
+    # ✅ 디버깅 카운터
+    override_count = 0
+    total_steps = 0
+    progress = 0.0  # ← 추가!
+    inference_times = []
     try:
         for step in range(5000):  # 250 seconds @ 20Hz
-            # ✅ Real-time synchronization
+            # Real-time synchronization
             current_time = time.time()
             elapsed = current_time - last_tick
+
             
             if elapsed < dt:
                 time.sleep(dt - elapsed)
@@ -212,29 +117,91 @@ def run_town04_racing():
             ego_velocity = vehicle.get_velocity()
             speed = np.linalg.norm([ego_velocity.x, ego_velocity.y, ego_velocity.z])
             
-            # Get local route
-            route, route_idx = get_lookahead_waypoints(
-                ego_transform, raceline, lookahead=20
+            # ✅ Get lookahead waypoints (from agent's raceline)
+            lookahead_wps, route_dist, route_idx = agent.get_lookahead_waypoints(
+                ego_transform, 
+                lookahead=30
             )
             
-            # Predict MPC controls
+            # ✅ Extract local route for model
+            route = np.array([[wp['x'], wp['y']] for wp in lookahead_wps])
+            curvature_ff = lookahead_wps[0]['curvature']  # ← Not calculated, from raceline!
+            
+            
+            # ✅ Extract feedforward curvature (from raceline!)
+            raceline_speed = lookahead_wps[0]['velocity'] 
+            target_speed = min(raceline_speed, 35)
+            # raceline_speed = lookahead_wps[0]['velocity']
+            # current_kappa = abs(curvature_ff)
+
+            # if current_kappa > 0.012:  # 매우 급한 커브만
+            #     target_speed = min(raceline_speed, 30.0)  # 90 km/h
+            # else:
+            #     target_speed = min(raceline_speed, 40.0)  # 기존대로
+
+            # # ① 물리 기반 cap
+            # speed_cap_physics = np.sqrt(12.0 / max(abs(curvature_ff), 1e-4))
+
+            # # ② 안전 마진
+            # target_speed = min(
+            #     raceline_speed * 0.9,     # 레이싱 마진
+            #     speed_cap_physics,        # 횡가속 한계
+            #     30.0               # 맵 제한
+            # )
+
+            # target_speed = min(target_speed, 25.0 / 3.6)
+            # print(target_speed)
+            # Predict MPC controls (model outputs κ_fb only)
+            
+            # ✅ 추론 시작
+            inference_start = time.perf_counter()
+
             results = agent.predict(
                 ego_speed=speed,
                 route=route,
-                bounding_boxes=None,  # No objects in racing
-                speed_limit=50.0
+                target_speed=target_speed,
+                bounding_boxes=None,
+                speed_limit=30.0
             )
+
+            inference_time = (time.perf_counter() - inference_start) * 1000  # ms
+            inference_times.append(inference_time)
+
+            # acc = results['acceleration']
             
-            # Apply control
+            # # if speed > target_speed:
+            # #     acc = min(acc, 0.0)
+            # acc = results['acceleration']
+            # v = speed
+            # v_ref = target_speed  # raceline speed (m/s)
+
+            # #  핵심: 속도 초과 시 가속 금지
+            # if v > v_ref:
+            #     acc = min(acc, 0.0)
+            # # speed_error = target_speed - ego_speed
+            # # if speed_error < 0:
+            # #     acc = speed_error * k   # k ≈ 0.3~0.7   
+            # === SPEED GOVERNOR DEBUG ===
+            # print(
+            #     f"[SPEED CTRL] current={speed*3.6:6.1f} km/h | "
+            #     f"target={target_speed*3.6:6.1f} km/h | "
+            #     f"a_before={results['acceleration']:+6.2f}",
+            #     end=" "
+            # )
+
+            # ✅ Apply control (with feedforward composition)
             control = agent.control_to_carla(
-                results['acceleration'],
-                results['curvature'],
-                speed
+                acceleration=results['acceleration'],
+                curvature_fb=results['curvature_fb'],
+                curvature_ff=curvature_ff,
+                current_speed=speed,
+                target_speed=target_speed   # ← raceline velocity
             )
+
             vehicle.apply_control(control)
-            
+
             # Update spectator
-            if step % 70 == 0:
+            if step % 10 == 0:
                 spectator_transform = carla.Transform(
                     ego_transform.location + carla.Location(z=50),
                     carla.Rotation(pitch=-90)
@@ -242,20 +209,47 @@ def run_town04_racing():
                 spectator.set_transform(spectator_transform)
             
             # Logging
+            # ✅ Logging (개선됨)
             if step % 20 == 0:
-                progress = (route_idx / len(raceline)) * 100
+                avg_inference = np.mean(inference_times[-100:]) 
+                progress = (route_idx / len(agent.raceline)) * 100
+                kappa_total = results['curvature_fb'] + curvature_ff
+                
+                # 기본 로그
                 print(f"Step {step:5d} | "
                       f"Speed: {speed*3.6:5.1f} km/h | "
-                      f"Progress: {progress:5.1f}% | "
-                      f"Acc: {results['acceleration']:5.2f} | "
-                      f"Curv: {results['curvature']:6.3f} | "
-                      f"Steer: {control.steer:5.2f}")
-
+                      f"Prog: {progress:4.1f}% | "
+                      f"Infer: {inference_time:5.2f}ms (avg: {avg_inference:5.2f}ms) | "
+                      f"Acc: {results['acceleration']:+5.2f} | "
+                      f"Acc: {results['acceleration']:+5.2f} | "
+                      f"κ_fb: {results['curvature_fb']:+6.4f} | "
+                      f"κ_ff: {curvature_ff:+6.4f} | "
+                      f"Steer: {control.steer:+5.2f}", end="")
+                
+            
+            # ✅ 주기적 요약 (200 steps마다)
+            if step > 0 and step % 200 == 0:
+                agent.print_debug_summary()
     
     except KeyboardInterrupt:
         print("\nInterrupted by user")
     
     finally:
+        if inference_times:
+            print(f"\n{'='*80}")
+            print(f"INFERENCE TIME STATISTICS")
+            print(f"{'='*80}")
+            print(f"Mean:   {np.mean(inference_times):6.2f} ms")
+            print(f"Median: {np.median(inference_times):6.2f} ms")
+            print(f"Std:    {np.std(inference_times):6.2f} ms")
+            print(f"Min:    {np.min(inference_times):6.2f} ms")
+            print(f"Max:    {np.max(inference_times):6.2f} ms")
+            print(f"P95:    {np.percentile(inference_times, 95):6.2f} ms")
+            print(f"P99:    {np.percentile(inference_times, 99):6.2f} ms")
+            
+        # 상세 통계
+        agent.print_debug_summary()
+
         # Cleanup
         settings.synchronous_mode = False
         settings.fixed_delta_seconds = None
@@ -267,3 +261,4 @@ def run_town04_racing():
 
 if __name__ == '__main__':
     run_town04_racing()
+

@@ -176,7 +176,76 @@ class PlanTDataset(Dataset):
         print('Total amount of routes:', total_routes)
         print('Skipped routes:', skipped_routes)
         print('Trainable routes:', trainable_routes)
+        self._check_mpc_variance()
 
+    def _check_mpc_variance(self):
+        """Check if MPC controls have sufficient variance for learning"""
+        print(f"\n{'='*80}")
+        print("MPC CONTROL VARIANCE CHECK")
+        print(f"{'='*80}")
+        
+        # Sample 500개만 체크 (전체 하면 너무 오래 걸림)
+        n_samples = min(500, len(self))
+        indices = np.random.choice(len(self), n_samples, replace=False)
+        
+        all_acc = []
+        all_curv_total = []
+        all_curv_fb = []
+        
+        print(f"Sampling {n_samples} samples...")
+        
+        for idx in indices:
+            sample = self[idx]
+            mpc = sample.get("mpc_controls", [])
+            
+            if len(mpc) > 0:
+                acc_list = [x[0] for x in mpc]
+                curv_list = [x[1] for x in mpc]
+                
+                all_acc.extend(acc_list)
+                all_curv_total.extend(curv_list)
+        
+        if len(all_acc) == 0:
+            print("⚠️  No MPC controls found in dataset!")
+            print(f"{'='*80}\n")
+            return
+        
+        all_acc = np.array(all_acc)
+        all_curv_total = np.array(all_curv_total)
+        
+        # Curvature total stats
+        print(f"\n📊 Curvature Total (κ_total) statistics:")
+        print(f"  Samples:  {len(all_curv_total)}")
+        print(f"  Mean:     {np.mean(all_curv_total):+.6f}")
+        print(f"  Std:      {np.std(all_curv_total):.6f}")
+        print(f"  Min:      {np.min(all_curv_total):+.6f}")
+        print(f"  Max:      {np.max(all_curv_total):+.6f}")
+        print(f"  Range:    {np.max(all_curv_total) - np.min(all_curv_total):.6f}")
+        
+        # Acceleration stats
+        print(f"\n📊 Acceleration statistics:")
+        print(f"  Samples:  {len(all_acc)}")
+        print(f"  Mean:     {np.mean(all_acc):+.6f}")
+        print(f"  Std:      {np.std(all_acc):.6f}")
+        print(f"  Min:      {np.min(all_acc):+.6f}")
+        print(f"  Max:      {np.max(all_acc):+.6f}")
+        
+        # 🚨 Warning checks
+        print(f"\n{'='*80}")
+        if np.std(all_curv_total) < 0.005:
+            print("🚨 CRITICAL WARNING: κ_total std < 0.005")
+            print("   → Model CANNOT learn from this data!")
+        
+        if (np.max(all_curv_total) - np.min(all_curv_total)) < 0.02:
+            print("🚨 CRITICAL WARNING: κ_total range < 0.02")
+            print("   → Insufficient diversity for learning!")
+        
+        if np.std(all_acc) < 0.1:
+            print("⚠️  WARNING: acceleration std < 0.1")
+            print("   → Very conservative driving data")
+        
+        print(f"{'='*80}\n")   
+        
     def __len__(self) -> int: #dataloader가 epoch 크기 계산할 때 사용
         """Returns the length of the dataset."""
         return len(self.measurements)
@@ -264,7 +333,7 @@ class PlanTDataset(Dataset):
             target_len = self.cfg.model.waypoints.wps_len
             
             accelerations = mpc_data.get("accelerations", [])
-            curvatures_total = mpc_data.get("curvatures_total", [])
+            curvatures_total = mpc_data.get("curvatures", [])
             
             if len(accelerations) >= target_len and len(curvatures_total) >= target_len:
                 # Subsample
@@ -294,7 +363,8 @@ class PlanTDataset(Dataset):
         # ego 기준으로 변환된 route
         sample["route"] = interpolate_route(loaded_measurements[self.cfg_train.seq_len - 1]["route"][:20])
         # expert가 의도한 목표 속도 
-        sample["target_speed"] = loaded_measurements[self.cfg_train.seq_len - 1]["target_speed"]
+        # sample["target_speed"] = loaded_measurements[self.cfg_train.seq_len - 1]["target_speed"]
+        sample["target_speed"] = loaded_measurements[self.cfg_train.seq_len - 1]["speed"]
         # 현재 ego 실제 속도 
         sample["ego_speed"] = loaded_measurements[self.cfg_train.seq_len - 1]["speed"]
 
